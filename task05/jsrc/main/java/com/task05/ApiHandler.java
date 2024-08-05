@@ -42,7 +42,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 
 	public ApiHandler() {
 		this.dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
-		this.table = dynamoDB.getTable("cmtr-e288a3c1-Events");
+		this.table = dynamoDB.getTable("cmtr-e288a3c1-Events-test");
 		this.objectMapper = new ObjectMapper();
 	}
 
