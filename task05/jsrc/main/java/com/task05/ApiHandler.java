@@ -57,7 +57,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 			String createdAt = java.time.Instant.now().toString();
 
 			Item item = new Item()
-					.withPrimaryKey("Id", id)
+					.withPrimaryKey("id", id)
 					.withInt("principalId", principalId)
 					.withString("createdAt", createdAt)
 					.withMap("body", content);
