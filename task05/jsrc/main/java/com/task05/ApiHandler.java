@@ -11,7 +11,10 @@ import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.events.DynamoDbTriggerEventSource;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
+import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.model.RetentionSetting;
+import com.syndicate.deployment.model.lambda.url.AuthType;
+import com.syndicate.deployment.model.lambda.url.InvokeMode;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,15 +25,16 @@ import java.util.UUID;
         isPublishVersion = false,
         logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
+@LambdaUrlConfig(
+		authType = AuthType.NONE,
+		invokeMode = InvokeMode.BUFFERED
+)
 @EnvironmentVariables(value = {
         @EnvironmentVariable(key = "region", value = "${region}"),
         @EnvironmentVariable(key = "table", value = "${target_table}")
 	}
 )
-@DynamoDbTriggerEventSource(
-        targetTable = "Events",
-        batchSize = 1
-)
+
 public class ApiHandler implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 	private final DynamoDB dynamoDB;
 	private final Table table;
@@ -38,7 +42,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 
 	public ApiHandler() {
 		this.dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
-		this.table = dynamoDB.getTable(System.getenv().get("resources_prefix") + "${target_table}");
+		this.table = dynamoDB.getTable("cmtr-e288a3c1-Events");
 		this.objectMapper = new ObjectMapper();
 	}
 
@@ -53,7 +57,7 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 			String createdAt = java.time.Instant.now().toString();
 
 			Item item = new Item()
-					.withPrimaryKey("id", id)
+					.withPrimaryKey("Id", id)
 					.withInt("principalId", principalId)
 					.withString("createdAt", createdAt)
 					.withMap("body", content);
