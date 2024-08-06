@@ -9,7 +9,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
-import com.fasterxml.uuid.Generators;
 import com.syndicate.deployment.annotations.EventSource;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
@@ -21,7 +20,7 @@ import com.syndicate.deployment.model.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 @LambdaHandler(
         lambdaName = "audit_producer",
@@ -62,10 +61,8 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, String> {
                 context.getLogger().log("old image = " + newImage);
                 String itemKey = newImage.get("key").getS();
                 Instant modificationTime = Instant.now();
-                AtomicLong idCounter = new AtomicLong();
-                long numericId = idCounter.incrementAndGet();
                 Item auditItem = new Item()
-                        .withNumber("id", numericId)
+                        .withString("id", UUID.randomUUID().toString())
                         .withString("itemKey", itemKey)
                         .withString("modificationTime", modificationTime.toString());
 
