@@ -13,6 +13,8 @@ import com.syndicate.deployment.annotations.events.DynamoDbTriggerEventSource;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.annotations.resources.DependsOn;
+import com.syndicate.deployment.model.DeploymentRuntime;
+import com.syndicate.deployment.model.LambdaSnapStart;
 import com.syndicate.deployment.model.ResourceType;
 import com.syndicate.deployment.model.RetentionSetting;
 import com.fasterxml.uuid.Generators;
@@ -26,30 +28,28 @@ import java.util.Map;
 @LambdaHandler(
         lambdaName = "audit_producer",
         roleName = "audit_producer-role",
-        isPublishVersion = false,
-        logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+        logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED,
+        runtime = DeploymentRuntime.JAVA11,
+        snapStart = LambdaSnapStart.PublishedVersions
 )
-@LambdaUrlConfig(
-        authType = AuthType.NONE,
-        invokeMode = InvokeMode.BUFFERED
+@DynamoDbTriggerEventSource(
+        targetTable = "Configuration",
+        batchSize = 1
+)
+@DependsOn(
+        name = "Configuration",
+        resourceType = ResourceType.DYNAMODB_TABLE
 )
 @EnvironmentVariables(value = {
         @EnvironmentVariable(key = "region", value = "${region}"),
         @EnvironmentVariable(key = "table", value = "${target_table}")
 	}
 )
-@DynamoDbTriggerEventSource(
-		targetTable = "Configuration",
-        batchSize = 10
-)
-@DependsOn(
-        name = "Configuration",
-        resourceType = ResourceType.DYNAMODB_TABLE
-)
+
 public class AuditProducer implements RequestHandler<DynamodbEvent, String> {
     private final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.defaultClient();
     private final DynamoDB dynamoDB = new DynamoDB(client);
-    private final Table auditTable = dynamoDB.getTable(System.getenv("target_table"));
+    private final Table auditTable = dynamoDB.getTable("cmtr-e288a3c1-Audit");
 
     @Override
     public String handleRequest(DynamodbEvent event, Context context) {
