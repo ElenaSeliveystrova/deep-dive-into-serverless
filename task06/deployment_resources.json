@@ -45,7 +45,7 @@
     "global_indexes": [],
     "autoscaling": []
   },
-  "${target_table}": {
+  "cmtr-e288a3c1-Audit-test": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
     "hash_key_type": "N",

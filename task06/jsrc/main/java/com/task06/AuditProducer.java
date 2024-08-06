@@ -49,7 +49,7 @@ import java.util.Map;
 public class AuditProducer implements RequestHandler<DynamodbEvent, String> {
     private final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.defaultClient();
     private final DynamoDB dynamoDB = new DynamoDB(client);
-    private final Table auditTable = dynamoDB.getTable("cmtr-e288a3c1-Audit");
+    private final Table auditTable = dynamoDB.getTable("cmtr-e288a3c1-Audit-test");
 
     @Override
     public String handleRequest(DynamodbEvent event, Context context) {
