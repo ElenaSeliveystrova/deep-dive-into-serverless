@@ -2,28 +2,26 @@ package com.task06;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
+import com.fasterxml.uuid.Generators;
+import com.syndicate.deployment.annotations.EventSource;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.events.DynamoDbTriggerEventSource;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
-import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.annotations.resources.DependsOn;
-import com.syndicate.deployment.model.DeploymentRuntime;
-import com.syndicate.deployment.model.LambdaSnapStart;
-import com.syndicate.deployment.model.ResourceType;
-import com.syndicate.deployment.model.RetentionSetting;
-import com.fasterxml.uuid.Generators;
-import com.syndicate.deployment.model.lambda.url.AuthType;
-import com.syndicate.deployment.model.lambda.url.InvokeMode;
+import com.syndicate.deployment.model.*;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @LambdaHandler(
         lambdaName = "audit_producer",
@@ -40,6 +38,7 @@ import java.util.Map;
         name = "Configuration",
         resourceType = ResourceType.DYNAMODB_TABLE
 )
+@EventSource(eventType = EventSourceType.DYNAMODB_TRIGGER)
 @EnvironmentVariables(value = {
         @EnvironmentVariable(key = "region", value = "${region}"),
         @EnvironmentVariable(key = "table", value = "${target_table}")
@@ -53,6 +52,7 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, String> {
 
     @Override
     public String handleRequest(DynamodbEvent event, Context context) {
+        context.getLogger().log("Lambda is triggered");
         for (DynamodbEvent.DynamodbStreamRecord record : event.getRecords()) {
             if (record.getEventName().equals("INSERT") || record.getEventName().equals("MODIFY")) {
 
@@ -62,9 +62,10 @@ public class AuditProducer implements RequestHandler<DynamodbEvent, String> {
                 context.getLogger().log("old image = " + newImage);
                 String itemKey = newImage.get("key").getS();
                 Instant modificationTime = Instant.now();
-
+                AtomicLong idCounter = new AtomicLong();
+                long numericId = idCounter.incrementAndGet();
                 Item auditItem = new Item()
-                        .withString("id", Generators.timeBasedGenerator().generate().toString())
+                        .withNumber("id", numericId)
                         .withString("itemKey", itemKey)
                         .withString("modificationTime", modificationTime.toString());
 
