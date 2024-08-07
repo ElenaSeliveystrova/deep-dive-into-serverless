@@ -49,7 +49,7 @@ public class UuidGenerator implements RequestHandler<Object, String> {
 
         String timestamp = Instant.now().toString();
         String fileName = timestamp + ".json";
-        String bucketName = "cmtr-e288a3c1-uuid-storage";
+        String bucketName = "cmtr-e288a3c1-uuid-storage-test";
 
         try {
             String jsonData = objectMapper.writeValueAsString(data);
