@@ -47,8 +47,7 @@ public class UuidGenerator implements RequestHandler<Object, String> {
         Map<String, Object> data = new HashMap<>();
         data.put("ids", uuidList);
 
-        String timestamp = Instant.now().toString();
-        String fileName = timestamp + ".json";
+        String fileName = Instant.now().toString();
         String bucketName = "cmtr-e288a3c1-uuid-storage-test";
 
         try {
