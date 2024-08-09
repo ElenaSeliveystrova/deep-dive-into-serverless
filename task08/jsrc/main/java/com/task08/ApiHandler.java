@@ -24,7 +24,7 @@ import org.example.WeatherClient;
 )
 @LambdaLayer(
 		layerName = "open-meteo-sdk",
-		libraries = {"lib/open-meteo-sdk-1.0-SNAPSHOT.jar"},
+		libraries = {"lib/meteo-sdk-1.0-SNAPSHOT.jar"},
 		runtime = DeploymentRuntime.JAVA11,
 		architectures = {Architecture.ARM64},
 		artifactExtension = ArtifactExtension.ZIP
