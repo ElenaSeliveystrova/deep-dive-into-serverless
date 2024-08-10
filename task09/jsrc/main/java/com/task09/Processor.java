@@ -5,6 +5,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.AWSXRayRecorder;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
+import com.amazonaws.xray.plugins.EC2Plugin;
+import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,18 +52,19 @@ import java.util.stream.StreamSupport;
 public class Processor implements RequestHandler<Map<String, Object>, String> {
 
     private static final String WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
-    private static final String DYNAMODB_TABLE_NAME = "cmtr-e288a3c1-Weather-test";
+    private static final String DYNAMODB_TABLE_NAME = "cmtr-e288a3c1-Weather";
 
     private final OkHttpClient httpClient = new OkHttpClient();
-    private final AWSXRayRecorder xRayRecorder = AWSXRayRecorderBuilder.defaultRecorder();
+//    private final AWSXRayRecorder xRayRecorder = AWSXRayRecorderBuilder.defaultRecorder();
 
-    public Processor() {
-        AWSXRay.setGlobalRecorder(xRayRecorder);
-    }
+
 
     @Override
     public String handleRequest(Map<String, Object> input, Context context) {
-        xRayRecorder.beginSegment("WeatherProcessorLambda");
+        AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
+        AWSXRay.setGlobalRecorder(builder.build());
+        AWSXRay.beginSegment("Scorekeep-init");
+
         try {
             String responseBody = getWeatherData();
             ObjectMapper objectMapper = new ObjectMapper();
@@ -85,7 +88,7 @@ public class Processor implements RequestHandler<Map<String, Object>, String> {
             ddb.putItem(request);
             return "Weather data successfully stored in DynamoDB.";
         } finally {
-            xRayRecorder.endSegment();
+            AWSXRay.endSegment();
         }
     }
 
