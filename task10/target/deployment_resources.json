@@ -20,19 +20,23 @@
     "event_sources" : [ ],
     "env_variables" : {
       "CLIENT_ID" : {
-        "resource_type" : "cognito_idp",
+        "resource_name" : "${booking_userpool}",
         "parameter" : "client_id",
-        "resource_name" : "${booking_userpool}"
+        "resource_type" : "cognito_idp"
       },
       "COGNITO_ID" : {
-        "resource_type" : "cognito_idp",
+        "resource_name" : "${booking_userpool}",
         "parameter" : "id",
-        "resource_name" : "${booking_userpool}"
+        "resource_type" : "cognito_idp"
       },
       "REGION" : "${region}"
     },
     "publish_version" : false,
     "logs_expiration" : "${logs_expiration}",
-    "snap_start" : "None"
+    "snap_start" : "None",
+    "url_config" : {
+      "auth_type" : "NONE",
+      "invoke_mode" : "BUFFERED"
+    }
   }
 }
