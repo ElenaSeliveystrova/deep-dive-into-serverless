@@ -25,11 +25,108 @@
     "resource_type": "iam_policy"
   },
   "api_handler-role": {
-    "predefined_policies": [],
+    "predefined_policies": ["AmazonCognitoPowerUser"],
     "principal_service": "lambda",
     "custom_policies": [
       "lambda-basic-execution"
     ],
     "resource_type": "iam_role"
+  },
+  "${booking_userpool}": {
+    "resource_type": "cognito_idp",
+    "password_policy": {
+      "minimum_length": 8,
+      "require_uppercase": false,
+      "require_symbols": false,
+      "require_lowercase": false,
+      "require_numbers": false
+    },
+    "auto_verified_attributes": [],
+    "sms_configuration": {},
+    "username_attributes": [],
+    "custom_attributes": [],
+    "client": {
+      "client_name": "client-app",
+      "generate_secret": false,
+      "explicit_auth_flows": [
+        "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+        "ALLOW_CUSTOM_AUTH",
+        "ALLOW_USER_SRP_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH"
+      ]
+    }
+  },
+  "task10-api": {
+    "resource_type": "api_gateway",
+    "deploy_stage": "api",
+    "dependencies": [],
+    "authorizers": {
+      "authorizer": {
+        "type": "COGNITO_USER_POOLS",
+        "identity_source": "method.request.header.Authorization",
+        "user_pools": [
+          "${booking_userpool}"
+        ],
+        "ttl": 300
+      }
+    },
+    "resources": {
+      "/tables": {
+        "enable_cors": false,
+        "GET": {
+          "authorization_type": "authorizer",
+          "integration_type": "lambda",
+          "lambda_name": "api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/reservations": {
+        "enable_cors": false,
+        "GET": {
+          "authorization_type": "authorizer",
+          "integration_type": "lambda",
+          "lambda_name": "api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/signin": {
+        "enable_cors": false,
+        "POST": {
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      },
+      "/signup": {
+        "enable_cors": false,
+        "POST": {
+          "authorization_type": "NONE",
+          "integration_type": "lambda",
+          "lambda_name": "api-handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
+      }
+    }
   }
 }

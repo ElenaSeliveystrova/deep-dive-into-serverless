@@ -1,0 +1,7 @@
+POST https://arn:aws:lambda:eu-central-1:196241772369:function:cmtr-e288a3c1-api_handler/signin
+Content-Type: application/json
+
+{
+  "email": "magicnimfa@gmail.com",
+  "password": "2342afs#"
+}
