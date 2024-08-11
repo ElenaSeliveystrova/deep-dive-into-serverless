@@ -25,7 +25,7 @@
     "resource_type": "iam_policy"
   },
   "processor-role": {
-    "predefined_policies": [],
+    "predefined_policies": ["AWSXrayFullAccess"],
     "principal_service": "lambda",
     "custom_policies": [
       "lambda-basic-execution"
