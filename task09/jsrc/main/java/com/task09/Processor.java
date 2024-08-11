@@ -3,14 +3,9 @@ package com.task09;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.AWSXRayRecorder;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.entities.Segment;
 import com.amazonaws.xray.entities.Subsegment;
-import com.amazonaws.xray.strategy.sampling.AllSamplingStrategy;
-import com.amazonaws.xray.strategy.sampling.CentralizedSamplingStrategy;
 import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
-import com.amazonaws.xray.strategy.sampling.NoSamplingStrategy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,11 +25,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @LambdaHandler(
@@ -73,36 +66,42 @@ public class Processor implements RequestHandler<Map<String, Object>, String> {
 
     @Override
     public String handleRequest(Map<String, Object> input, Context context) {
-        AWSXRay.beginSegment("WeatherLambdaHandler");
+        String responseBody = null;
+        Subsegment subsegment = AWSXRay.beginSubsegment("OpenMeteoAPIRequest");
         try {
             context.getLogger().log("Run function");
-            String responseBody = getWeatherData();
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode weatherData = null;
-            try {
-                weatherData = objectMapper.readTree(responseBody);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            DynamoDbClient ddb = DynamoDbClient.create();
-
-            Map<String, AttributeValue> item = new HashMap<>();
-            item.put("id", AttributeValue.builder().s(UUID.randomUUID().toString()).build());
-            item.put("forecast", AttributeValue.builder().m(prepareDynamoDBForcastItem(weatherData)).build());
-
-            PutItemRequest request = PutItemRequest.builder()
-                    .tableName(DYNAMODB_TABLE_NAME)
-                    .item(item)
-                    .build();
-
-            ddb.putItem(request);
-            return "Weather data successfully stored in DynamoDB.";
+            responseBody = getWeatherData();
+        } catch (Exception e) {
+            subsegment.addException(e);
+            throw e;
         } finally {
-            AWSXRay.endSegment();
+            AWSXRay.endSubsegment();
         }
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode weatherData = null;
+        try {
+            weatherData = objectMapper.readTree(responseBody);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        DynamoDbClient ddb = DynamoDbClient.create();
+
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put("id", AttributeValue.builder().s(UUID.randomUUID().toString()).build());
+        item.put("forecast", AttributeValue.builder().m(prepareDynamoDBForcastItem(weatherData)).build());
+
+        PutItemRequest request = PutItemRequest.builder()
+                .tableName(DYNAMODB_TABLE_NAME)
+                .item(item)
+                .build();
+
+        ddb.putItem(request);
+        return "Weather data successfully stored in DynamoDB.";
     }
 
-    private String getWeatherData()  {
+    private String getWeatherData() {
         okhttp3.Request request = new Request.Builder()
                 .url(WEATHER_API_URL)
                 .build();
