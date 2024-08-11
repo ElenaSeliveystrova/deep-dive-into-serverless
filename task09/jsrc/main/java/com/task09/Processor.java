@@ -58,7 +58,7 @@ import java.util.stream.StreamSupport;
 public class Processor implements RequestHandler<Map<String, Object>, String> {
 
     private static final String WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m";
-    private static final String DYNAMODB_TABLE_NAME = "cmtr-e288a3c1-Weather";
+    private static final String DYNAMODB_TABLE_NAME = "cmtr-e288a3c1-Weather-test";
 
     private final OkHttpClient httpClient = new OkHttpClient();
 
