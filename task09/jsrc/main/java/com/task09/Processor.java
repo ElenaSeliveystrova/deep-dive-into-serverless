@@ -5,8 +5,12 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.AWSXRayRecorder;
 import com.amazonaws.xray.AWSXRayRecorderBuilder;
-import com.amazonaws.xray.plugins.EC2Plugin;
+import com.amazonaws.xray.entities.Segment;
+import com.amazonaws.xray.entities.Subsegment;
+import com.amazonaws.xray.strategy.sampling.AllSamplingStrategy;
+import com.amazonaws.xray.strategy.sampling.CentralizedSamplingStrategy;
 import com.amazonaws.xray.strategy.sampling.LocalizedSamplingStrategy;
+import com.amazonaws.xray.strategy.sampling.NoSamplingStrategy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +30,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,17 +61,21 @@ public class Processor implements RequestHandler<Map<String, Object>, String> {
     private static final String DYNAMODB_TABLE_NAME = "cmtr-e288a3c1-Weather";
 
     private final OkHttpClient httpClient = new OkHttpClient();
-//    private final AWSXRayRecorder xRayRecorder = AWSXRayRecorderBuilder.defaultRecorder();
 
+    public Processor() {
+        AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
+        URL ruleFile = Processor.class.getResource("/sampling-rules.json");
 
+        builder.withSamplingStrategy(new LocalizedSamplingStrategy(ruleFile));
+        AWSXRay.setGlobalRecorder(builder.build());
+
+    }
 
     @Override
     public String handleRequest(Map<String, Object> input, Context context) {
-        AWSXRayRecorderBuilder builder = AWSXRayRecorderBuilder.standard();
-        AWSXRay.setGlobalRecorder(builder.build());
-        AWSXRay.beginSegment("Scorekeep-init");
-
+        AWSXRay.beginSegment("WeatherLambdaHandler");
         try {
+            context.getLogger().log("Run function");
             String responseBody = getWeatherData();
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode weatherData = null;

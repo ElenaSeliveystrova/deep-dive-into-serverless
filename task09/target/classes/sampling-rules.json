@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "description": "Trace all requests",
+      "rule_name": "TraceAll",
+      "priority": 1,
+      "fixed_target": 1000000,
+      "rate": 1,
+      "service_name": "*",
+      "http_method": "*",
+      "url_path": "*",
+      "host": "*",
+      "service_type": "*"
+    }
+  ],
+  "default": {
+    "fixed_target": 1000000,
+    "rate": 1
+  }
+}
