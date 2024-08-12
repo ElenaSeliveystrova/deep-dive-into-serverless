@@ -1,4 +1,4 @@
-POST https://arn:aws:lambda:eu-central-1:196241772369:function:cmtr-e288a3c1-api_handler/signin
+POST https://d2o7zamklkmdaxwmpyx3iicsfy0aluih.lambda-url.eu-central-1.on.aws/signin
 Content-Type: application/json
 
 {
