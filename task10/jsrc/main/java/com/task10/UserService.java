@@ -5,6 +5,7 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import com.amazonaws.services.cognitoidp.model.*;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.json.JSONObject;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ public class UserService {
     private final String userPoolId = System.getenv("COGNITO_ID");
     private final String clientId = System.getenv("CLIENT_ID");//
 
-    public APIGatewayProxyResponseEvent handleSignup(APIGatewayProxyRequestEvent request) {
+    public APIGatewayProxyResponseEvent handleSignup(APIGatewayV2HTTPEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             String firstName = json.getString("firstName");
@@ -58,7 +59,7 @@ public class UserService {
         }
     }
 
-    public APIGatewayProxyResponseEvent handleSignin(APIGatewayProxyRequestEvent request) {
+    public APIGatewayProxyResponseEvent handleSignin(APIGatewayV2HTTPEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             String email = json.getString("email");
