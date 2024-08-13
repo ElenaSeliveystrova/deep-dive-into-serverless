@@ -15,7 +15,7 @@ public class UserService {
     private final String userPoolId = System.getenv("COGNITO_ID");
     private final String clientId = System.getenv("CLIENT_ID");//
 
-    public APIGatewayProxyResponseEvent handleSignup(APIGatewayV2HTTPEvent request) {
+    public APIGatewayProxyResponseEvent handleSignup(APIGatewayProxyRequestEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             String firstName = json.getString("firstName");
@@ -59,7 +59,7 @@ public class UserService {
         }
     }
 
-    public APIGatewayProxyResponseEvent handleSignin(APIGatewayV2HTTPEvent request) {
+    public APIGatewayProxyResponseEvent handleSignin(APIGatewayProxyRequestEvent request) {
         try {
             JSONObject json = new JSONObject(request.getBody());
             String email = json.getString("email");

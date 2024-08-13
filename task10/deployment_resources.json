@@ -56,7 +56,7 @@
       ]
     }
   },
-  "task10_api": {
+  "task10_api-test": {
     "resource_type": "api_gateway",
     "deploy_stage": "api",
     "dependencies": [],
