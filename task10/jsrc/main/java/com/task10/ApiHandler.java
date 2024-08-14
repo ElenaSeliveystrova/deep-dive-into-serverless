@@ -18,6 +18,8 @@ import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 @LambdaHandler(
     	lambdaName = "api_handler",
 		roleName = "api_handler-role",
@@ -33,32 +35,44 @@ import org.json.JSONObject;
 public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
 	private final UserService userService = new UserService();
-//	private final TableService tableService = new TableService();
+	private final TableService tableService = new TableService();
 //	private final ReservationService reservationService = new ReservationService();
 
-	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
-		context.getLogger().log("request" + request.toString());
-		String path = request.getPath();
-		String method = request.getRequestContext().getHttpMethod();
 
+	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
+		context.getLogger().log("request: " + requestEvent);
+		context.getLogger().log("method: " + requestEvent.getHttpMethod());
+		context.getLogger().log("path: " + requestEvent.getPath());
+		context.getLogger().log("body: " + requestEvent.getBody());
+		context.getLogger().log("path: " + requestEvent.getPath());
+		context.getLogger().log("method: " + requestEvent.getHttpMethod());
+		String path = requestEvent.getPath();
+		String httpMethod = requestEvent.getHttpMethod();
+		APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
 		switch (path) {
 			case "/signup":
-				if ("POST".equals(method)) {
-					return userService.handleSignup(request);
+				if ("POST".equals(httpMethod)) {
+					responseEvent = userService.handleSignup(requestEvent);
+					return responseEvent;
 				}
 				break;
 			case "/signin":
-				if ("POST".equals(method)) {
-					return userService.handleSignin(request);
+				if ("POST".equals(httpMethod)) {
+					responseEvent = userService.handleSignin(requestEvent);
+					context.getLogger().log("responseEvent: " + responseEvent.getBody());
+					context.getLogger().log("responseEvent: " + responseEvent);
+					return responseEvent;
 				}
 				break;
-//			case "/tables":
-//				if ("GET".equals(method)) {
-//					return tableService.handleGetTables(request);
-//				} else if ("POST".equals(method)) {
-//					return tableService.handleCreateTable(request);
-//				}
-//				break;
+			case "/tables":
+				if ("GET".equals(httpMethod)) {
+					responseEvent = tableService.handleGetTables(requestEvent);
+					context.getLogger().log("responseEvent: " + responseEvent.getBody());
+				} else if ("POST".equals(httpMethod)) {
+					responseEvent = tableService.handleCreateTable(requestEvent);
+					context.getLogger().log("responseEvent: " + responseEvent.getBody());
+				}
+				break;
 //			case "/tables/{tableId}":
 //				if ("GET".equals(method)) {
 //					return tableService.handleGetTableById(request);
@@ -74,8 +88,6 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 			default:
 				return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid request");
 		}
-		return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject()
-				.put("message", "Sign-up process is successful.")
-				.toString());
+		return responseEvent;
 	}
 }

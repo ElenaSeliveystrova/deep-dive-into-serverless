@@ -1,17 +1,16 @@
 package com.task10;
 
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
-import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder;
-import com.amazonaws.services.cognitoidp.model.*;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.json.JSONObject;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+
 import java.util.Map;
 
 public class UserService {
 
-    private final AWSCognitoIdentityProvider cognitoClient = AWSCognitoIdentityProviderClientBuilder.defaultClient();
+    private final CognitoIdentityProviderClient cognitoClient = CognitoIdentityProviderClient.builder().build();
     private final String userPoolId = System.getenv("COGNITO_ID");
     private final String clientId = System.getenv("CLIENT_ID");//
 
@@ -30,24 +29,24 @@ public class UserService {
                 return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Password does not meet complexity requirements");
             }
 
-            AdminCreateUserRequest createUserRequest = new AdminCreateUserRequest()
-                    .withUserPoolId(userPoolId)
-                    .withUsername(email)
-                    .withUserAttributes(
-                            new AttributeType().withName("given_name").withValue(firstName),
-                            new AttributeType().withName("family_name").withValue(lastName),
-                            new AttributeType().withName("email").withValue(email)
+            AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(email)
+                    .userAttributes(
+                            AttributeType.builder().name("given_name").value(firstName).build(),
+                            AttributeType.builder().name("family_name").value(lastName).build(),
+                            AttributeType.builder().name("email").value(email).build()
                     )
-                    .withTemporaryPassword(password);
-
+                    .temporaryPassword(password)
+                    .build();
             cognitoClient.adminCreateUser(createUserRequest);
 
-            AdminSetUserPasswordRequest setUserPasswordRequest = new AdminSetUserPasswordRequest()
-                    .withUserPoolId(userPoolId)
-                    .withUsername(email)
-                    .withPassword(password)
-                    .withPermanent(true);
-
+            AdminSetUserPasswordRequest setUserPasswordRequest = AdminSetUserPasswordRequest.builder()
+                    .userPoolId(userPoolId)
+                    .username(email)
+                    .password(password)
+                    .permanent(true)
+                    .build();
             cognitoClient.adminSetUserPassword(setUserPasswordRequest);
 
             return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody("Sign-up successful");
@@ -65,17 +64,18 @@ public class UserService {
             String email = json.getString("email");
             String password = json.getString("password");
 
-            AdminInitiateAuthRequest authRequest = new AdminInitiateAuthRequest()
-                    .withAuthFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
-                    .withUserPoolId(userPoolId)
-                    .withClientId(clientId)//
-                    .withAuthParameters(Map.of(
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .authFlow(AuthFlowType.ADMIN_NO_SRP_AUTH)
+                    .userPoolId(userPoolId)
+                    .clientId(clientId)//
+                    .authParameters(Map.of(
                             "USERNAME", email,
                             "PASSWORD", password
-                    ));
+                    ))
+                    .build();
 
-            AdminInitiateAuthResult authResult = cognitoClient.adminInitiateAuth(authRequest);
-            String accessToken = authResult.getAuthenticationResult().getIdToken();
+            AdminInitiateAuthResponse authResult = cognitoClient.adminInitiateAuth(authRequest);
+            String accessToken = authResult.authenticationResult().accessToken();
 
             return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("accessToken", accessToken).toString());
 
