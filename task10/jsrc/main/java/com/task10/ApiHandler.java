@@ -18,6 +18,8 @@ import com.syndicate.deployment.model.environment.ValueTransformer;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 import com.syndicate.deployment.model.lambda.url.InvokeMode;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -66,9 +68,13 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 				}
 				break;
 			case "/tables":
+
 				final CognitoIdentity identity = context.getIdentity();
 				final String userId = identity.getIdentityId();
 				final String poolId = identity.getIdentityPoolId();
+
+				context.getLogger().log("userId: " + userId);
+				context.getLogger().log("poolId: " + poolId);
 				if ("GET".equals(httpMethod)) {
 					responseEvent = tableService.handleGetTables(requestEvent);
 					context.getLogger().log("responseEvent: " + responseEvent.getBody());

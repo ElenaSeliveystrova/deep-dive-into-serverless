@@ -25,7 +25,11 @@
     "resource_type": "iam_policy"
   },
   "api_handler-role": {
-    "predefined_policies": ["AmazonCognitoPowerUser", "AmazonCognitoDeveloperAuthenticatedIdentities", "AmazonAPIGatewayInvokeFullAccess"],
+    "predefined_policies": [
+      "AmazonCognitoPowerUser",
+      "AmazonCognitoDeveloperAuthenticatedIdentities",
+      "AmazonAPIGatewayInvokeFullAccess"
+    ],
     "principal_service": "lambda",
     "custom_policies": [
       "lambda-basic-execution"
@@ -72,7 +76,7 @@
     },
     "resources": {
       "/tables": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "authorizer",
@@ -99,14 +103,16 @@
         }
       },
       "/reservations": {
-        "enable_cors": false,
+        "enable_cors": true,
         "GET": {
           "enable_proxy": true,
           "authorization_type": "authorizer",
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
-          "method_request_parameters": {"method.request.header.Authorization": true},
+          "method_request_parameters": {
+            "method.request.header.Authorization": true
+          },
           "integration_request_body_template": {},
           "responses": [],
           "integration_responses": [],
@@ -118,7 +124,9 @@
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
-          "method_request_parameters": {"method.request.header.Authorization": true},
+          "method_request_parameters": {
+            "method.request.header.Authorization": true
+          },
           "integration_request_body_template": {},
           "responses": [],
           "integration_responses": [],
