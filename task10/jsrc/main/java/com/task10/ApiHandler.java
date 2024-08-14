@@ -1,5 +1,6 @@
 package com.task10;
 
+import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -65,6 +66,9 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 				}
 				break;
 			case "/tables":
+				final CognitoIdentity identity = context.getIdentity();
+				final String userId = identity.getIdentityId();
+				final String poolId = identity.getIdentityPoolId();
 				if ("GET".equals(httpMethod)) {
 					responseEvent = tableService.handleGetTables(requestEvent);
 					context.getLogger().log("responseEvent: " + responseEvent.getBody());

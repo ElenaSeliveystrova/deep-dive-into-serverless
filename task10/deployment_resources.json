@@ -91,7 +91,7 @@
           "integration_type": "lambda",
           "lambda_name": "api_handler",
           "api_key_required": false,
-          "method_request_parameters": {"method.request.header.Authorization": true},
+          "method_request_parameters": {},
           "integration_request_body_template": {},
           "responses": [],
           "integration_responses": [],

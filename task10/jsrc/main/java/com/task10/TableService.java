@@ -1,13 +1,10 @@
 package com.task10;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
@@ -19,6 +16,7 @@ import java.util.stream.Collectors;
 
 public class TableService {
     private static final String TABLE_NAME = "cmtr-e288a3c1-Tables";
+    private final CognitoIdentityProviderClient cognitoClient = CognitoIdentityProviderClient.builder().build();
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper;
 
@@ -78,14 +76,6 @@ public class TableService {
                 .build();
 
         dynamoDbClient.putItem(request);
-//        Item item = new Item()
-//                .withPrimaryKey("id", id)
-//                .withInt("number", number)
-//                .withInt("places", places)
-//                .withBoolean("isVip", isVip)
-//                .withInt("minOrder", minOrder);
-//
-//        table.putItem(item);
         return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("id", id).toString());
     }
 }
