@@ -31,11 +31,11 @@ public class UserService {
 
             AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
-                    .username("cmtr-e288a3c1-validation_" + email)
+                    .username(email)
                     .userAttributes(
                             AttributeType.builder().name("given_name").value(firstName).build(),
                             AttributeType.builder().name("family_name").value(lastName).build(),
-                            AttributeType.builder().name("email").value(email).build()
+                            AttributeType.builder().name("email").value("cmtr-e288a3c1-" + email).build()
                     )
                     .temporaryPassword(password)
                     .build();
