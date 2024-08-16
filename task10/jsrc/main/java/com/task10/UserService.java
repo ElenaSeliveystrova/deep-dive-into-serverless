@@ -25,7 +25,7 @@ public class UserService {
             if (!json.getString("email").matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
                 return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid email format");
             }
-            if (!json.getString("password").matches("^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[$%^*])[a-zA-Z0-9$%^*]{8,}$")) {
+            if (!json.getString("password").matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[\\$%\\^_\\-\\*])[A-Za-z\\d\\$%\\^_\\-\\*]{12,}$")) {
                 return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Password does not meet complexity requirements");
             }
 
