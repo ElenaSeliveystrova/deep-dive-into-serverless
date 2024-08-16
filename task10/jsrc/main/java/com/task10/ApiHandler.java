@@ -32,10 +32,9 @@ import java.util.Map;
 @DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}")
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
-		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}",
-				valueTransformer = ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID),
-		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}",
-				valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID)
+		@EnvironmentVariable(key = "booking_userpool", value = "${booking_userpool}"),
+		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID),
+		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID)
 })
 public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -46,11 +45,12 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
 		context.getLogger().log("request: " + requestEvent);
-		context.getLogger().log("method: " + requestEvent.getHttpMethod());
-		context.getLogger().log("path: " + requestEvent.getPath());
-		context.getLogger().log("body: " + requestEvent.getBody());
 		context.getLogger().log("path: " + requestEvent.getPath());
 		context.getLogger().log("method: " + requestEvent.getHttpMethod());
+		String userPoolName = System.getenv("booking_userpool");
+		context.getLogger().log("user pool: " + userPoolName);
+		context.getLogger().log("user COGNITO_ID: " + System.getenv("${COGNITO_ID}"));
+		context.getLogger().log("user CLIENT_ID: " + System.getenv("${CLIENT_ID}"));
 		String path = requestEvent.getPath();
 		String httpMethod = requestEvent.getHttpMethod();
 		APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
