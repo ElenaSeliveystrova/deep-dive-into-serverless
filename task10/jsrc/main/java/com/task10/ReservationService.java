@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ReservationService {
-    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations";
+    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations-test";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TableService tableService;
