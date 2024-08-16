@@ -29,27 +29,57 @@ public class UserService {
                 return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Password does not meet complexity requirements");
             }
 
-            AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
+//            AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
+//                    .userPoolId(userPoolId)
+//                    .username(email)
+//                    .userAttributes(
+//                            AttributeType.builder().name("given_name").value(firstName).build(),
+//                            AttributeType.builder().name("family_name").value(lastName).build(),
+//                            AttributeType.builder().name("email").value(email).build()
+//                    )
+//                    .temporaryPassword(password)
+//                    .build();
+//            cognitoClient.adminCreateUser(createUserRequest);
+
+//            AdminSetUserPasswordRequest setUserPasswordRequest = AdminSetUserPasswordRequest.builder()
+//                    .userPoolId(userPoolId)
+//                    .username(email)
+//                    .password(password)
+//                    .permanent(true)
+//                    .build();
+//            cognitoClient.adminSetUserPassword(setUserPasswordRequest);
+            AdminCreateUserResponse adminCreateUserResponse = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
                     .username(email)
-                    .userAttributes(
-                            AttributeType.builder().name("given_name").value(firstName).build(),
-                            AttributeType.builder().name("family_name").value(lastName).build(),
-                            AttributeType.builder().name("email").value("cmtr-e288a3c1-" + email).build()
-                    )
                     .temporaryPassword(password)
-                    .build();
-            cognitoClient.adminCreateUser(createUserRequest);
+                    .userAttributes(
+                            AttributeType.builder()
+                                    .name("given_name")
+                                    .value(firstName)
+                                    .build(),
+                            AttributeType.builder()
+                                    .name("family_name")
+                                    .value(lastName)
+                                    .build(),
+                            AttributeType.builder()
+                                    .name("email")
+                                    .value(email)
+                                    .build())
+                    .desiredDeliveryMediums(DeliveryMediumType.EMAIL)
+                    .messageAction("SUPPRESS")
+                    .forceAliasCreation(Boolean.FALSE)
+                    .build()
+            );
+            String userId = adminCreateUserResponse.user().attributes().stream()
+                    .filter(attr -> attr.name().equals("sub"))
+                    .map(AttributeType::value)
+                    .findAny()
+                    .orElseThrow(() -> new RuntimeException("Sub not found."));
 
-            AdminSetUserPasswordRequest setUserPasswordRequest = AdminSetUserPasswordRequest.builder()
-                    .userPoolId(userPoolId)
-                    .username(email)
-                    .password(password)
-                    .permanent(true)
-                    .build();
-            cognitoClient.adminSetUserPassword(setUserPasswordRequest);
-
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody("Sign-up successful");
+            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject()
+                    .put("message", "User has been successfully signed up.")
+                    .put("userId", userId)
+                    .toString());
 
         } catch (UsernameExistsException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("User already exists: " + e.getMessage());
