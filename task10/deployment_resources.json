@@ -28,7 +28,8 @@
     "predefined_policies": [
       "AmazonCognitoPowerUser",
       "AmazonCognitoDeveloperAuthenticatedIdentities",
-      "AmazonAPIGatewayInvokeFullAccess"
+      "AmazonAPIGatewayInvokeFullAccess",
+      "AmazonDynamoDBFullAccess"
     ],
     "principal_service": "lambda",
     "custom_policies": [
@@ -60,7 +61,7 @@
       ]
     }
   },
-  "task10_api-test": {
+  "task10_api": {
     "resource_type": "api_gateway",
     "deploy_stage": "api",
     "dependencies": [],
@@ -134,7 +135,7 @@
         }
       },
       "/signin": {
-        "enable_cors": false,
+        "enable_cors": true,
         "POST": {
           "enable_proxy": true,
           "authorization_type": "NONE",
@@ -162,13 +163,28 @@
           "integration_responses": [],
           "default_error_pattern": true
         }
+      },
+      "/tables/{tableId}": {
+        "enable_cors": true,
+        "GET": {
+          "enable_proxy": true,
+          "authorization_type": "authorizer",
+          "integration_type": "lambda",
+          "lambda_name": "api_handler",
+          "api_key_required": false,
+          "method_request_parameters": {},
+          "integration_request_body_template": {},
+          "responses": [],
+          "integration_responses": [],
+          "default_error_pattern": true
+        }
       }
     }
   },
   "Tables": {
     "resource_type": "dynamodb_table",
     "hash_key_name": "id",
-    "hash_key_type": "S",
+    "hash_key_type": "N",
     "read_capacity": 1,
     "write_capacity": 1,
     "global_indexes": [],

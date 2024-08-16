@@ -32,14 +32,16 @@ import java.util.Map;
 @DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}")
 @EnvironmentVariables(value = {
 		@EnvironmentVariable(key = "REGION", value = "${region}"),
-		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID),
-		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID)
+		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}",
+				valueTransformer = ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID),
+		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}",
+				valueTransformer = ValueTransformer.USER_POOL_NAME_TO_CLIENT_ID)
 })
 public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
 	private final UserService userService = new UserService();
 	private final TableService tableService = new TableService();
-//	private final ReservationService reservationService = new ReservationService();
+	private final ReservationService reservationService = new ReservationService();
 
 
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
@@ -52,6 +54,12 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 		String path = requestEvent.getPath();
 		String httpMethod = requestEvent.getHttpMethod();
 		APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
+		String tableId = "";
+		if (requestEvent.getPathParameters() != null) {
+			tableId = requestEvent.getPathParameters().get("tableId");
+			path = path.replace(tableId,"");
+		}
+
 		switch (path) {
 			case "/signup":
 				if ("POST".equals(httpMethod)) {
@@ -68,33 +76,26 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 				}
 				break;
 			case "/tables":
-
-				final CognitoIdentity identity = context.getIdentity();
-				final String userId = identity.getIdentityId();
-				final String poolId = identity.getIdentityPoolId();
-
-				context.getLogger().log("userId: " + userId);
-				context.getLogger().log("poolId: " + poolId);
 				if ("GET".equals(httpMethod)) {
-					responseEvent = tableService.handleGetTables(requestEvent);
+					responseEvent = tableService.handleGetTables();
 					context.getLogger().log("responseEvent: " + responseEvent.getBody());
 				} else if ("POST".equals(httpMethod)) {
 					responseEvent = tableService.handleCreateTable(requestEvent);
 					context.getLogger().log("responseEvent: " + responseEvent.getBody());
 				}
 				break;
-//			case "/tables/{tableId}":
-//				if ("GET".equals(method)) {
-//					return tableService.handleGetTableById(request);
-//				}
-//				break;
-//			case "/reservations":
-//				if ("POST".equals(method)) {
-//					return reservationService.handleCreateReservation(request);
-//				} else if ("GET".equals(method)) {
-//					return reservationService.handleGetReservations(request);
-//				}
-//				break;
+			case "/tables/":
+				if ("GET".equals(httpMethod)) {
+					return tableService.handleGetTableById(requestEvent, context);
+				}
+				break;
+			case "/reservations":
+				if ("POST".equals(httpMethod)) {
+					return reservationService.handleCreateReservation(requestEvent);
+				} else if ("GET".equals(httpMethod)) {
+					return reservationService.handleGetReservations();
+				}
+				break;
 			default:
 				return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid request");
 		}

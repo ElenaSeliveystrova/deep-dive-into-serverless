@@ -31,7 +31,7 @@ public class UserService {
 
             AdminCreateUserRequest createUserRequest = AdminCreateUserRequest.builder()
                     .userPoolId(userPoolId)
-                    .username(email)
+                    .username("cmtr-e288a3c1-validation_" + email)
                     .userAttributes(
                             AttributeType.builder().name("given_name").value(firstName).build(),
                             AttributeType.builder().name("family_name").value(lastName).build(),
@@ -75,9 +75,9 @@ public class UserService {
                     .build();
 
             AdminInitiateAuthResponse authResult = cognitoClient.adminInitiateAuth(authRequest);
-            String accessToken = authResult.authenticationResult().accessToken();
+            String idToken = authResult.authenticationResult().idToken();
 
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("accessToken", accessToken).toString());
+            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("idToken", idToken).toString());
 
         } catch (NotAuthorizedException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid credentials: " + e.getMessage());
