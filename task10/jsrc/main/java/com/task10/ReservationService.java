@@ -26,12 +26,12 @@ public class ReservationService {
         String date = json.getString("date");
         String slotTimeStart = json.getString("slotTimeStart");
         String slotTimeEnd = json.getString("slotTimeEnd");
-        if (!json.getString(date).matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {
+        if (!date.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid date format: " + date);
         }
         String regexpTime = "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$";
-        if (!json.getString(slotTimeStart).matches(regexpTime) ||
-                !json.getString(slotTimeEnd).matches(regexpTime)) {
+        if (!slotTimeStart.matches(regexpTime) ||
+                !slotTimeEnd.matches(regexpTime)) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid slotTime format: " + date);
         }
 
