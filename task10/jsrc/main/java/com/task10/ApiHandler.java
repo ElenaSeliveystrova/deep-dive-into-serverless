@@ -40,7 +40,7 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 
 	private final UserService userService = new UserService();
 	private final TableService tableService = new TableService();
-	private final ReservationService reservationService = new ReservationService();
+	private final ReservationService reservationService = new ReservationService(tableService);
 
 
 	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
@@ -86,12 +86,12 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 				break;
 			case "/tables/":
 				if ("GET".equals(httpMethod)) {
-					return tableService.handleGetTableById(requestEvent, context);
+					return tableService.handleGetTableById(requestEvent.getPathParameters().get("tableId"), context);
 				}
 				break;
 			case "/reservations":
 				if ("POST".equals(httpMethod)) {
-					return reservationService.handleCreateReservation(requestEvent);
+					return reservationService.handleCreateReservation(requestEvent, context);
 				} else if ("GET".equals(httpMethod)) {
 					return reservationService.handleGetReservations();
 				}

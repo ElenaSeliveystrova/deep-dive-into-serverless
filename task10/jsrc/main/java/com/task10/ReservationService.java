@@ -1,5 +1,6 @@
 package com.task10;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,14 +19,29 @@ public class ReservationService {
     private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TableService tableService;
 
-    public APIGatewayProxyResponseEvent handleCreateReservation(APIGatewayProxyRequestEvent requestEvent) {
+    public ReservationService(TableService tableService) {
+        this.tableService = tableService;
+    }
+
+    public APIGatewayProxyResponseEvent handleCreateReservation(APIGatewayProxyRequestEvent requestEvent, Context context) {
         JSONObject json = new JSONObject(requestEvent.getBody());
         int tableNumber = json.getInt("tableNumber");
+
+        APIGatewayProxyResponseEvent responseEvent = tableService.handleGetTableById(String.valueOf(tableNumber), context);
+        if (responseEvent.getStatusCode() != 200) {
+            return responseEvent;
+        }
         String clientName = json.getString("clientName");
         String date = json.getString("date");
         String slotTimeStart = json.getString("slotTimeStart");
         String slotTimeEnd = json.getString("slotTimeEnd");
+
+        if (hasOverlapping(tableNumber, date, context)) {
+            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Overlapping");
+        }
+
         if (!date.matches("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid date format: " + date);
         }
@@ -53,23 +69,18 @@ public class ReservationService {
         return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("reservationId", reservationId).toString());
     }
 
+    private boolean hasOverlapping(int tableNumber, String date, Context context) {
+        context.getLogger().log("table:" + tableNumber + " date:" + date);
+        return getReservations().stream()
+                .peek(reservation -> context.getLogger().log("reservation:" + reservation))
+                .anyMatch(reservation ->
+                        Integer.parseInt((String)reservation.get("tableNumber")) == tableNumber
+                        && reservation.get("date").equals(date));
+    }
+
     public APIGatewayProxyResponseEvent handleGetReservations() {
         try {
-            ScanRequest scanRequest = ScanRequest.builder().tableName(TABLE_NAME).build();
-            ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
-
-            List<Map<String, Object>> reservations = scanResponse.items().stream()
-                    .map(item -> {
-                        Map<String, Object> table = new HashMap<>();
-                        table.put("tableNumber", item.get("tableNumber").s());
-                        table.put("clientName", item.get("clientName").s());
-                        table.put("date", item.get("date").s());
-                        table.put("slotTimeStart", item.get("slotTimeStart").s());
-                        table.put("slotTimeEnd", item.get("slotTimeEnd").s());
-                        return table;
-                    })
-                    .collect(Collectors.toList());
-
+            List<Map<String, Object>> reservations = getReservations();
             Map<String, List<Map<String, Object>>> responseBody = new HashMap<>();
             responseBody.put("reservations", reservations);
 
@@ -79,6 +90,25 @@ public class ReservationService {
         } catch (DynamoDbException | IOException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }
+
+    }
+
+    private List<Map<String, Object>> getReservations() {
+        ScanRequest scanRequest = ScanRequest.builder().tableName(TABLE_NAME).build();
+        ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
+
+         return scanResponse.items().stream()
+                .map(item -> {
+
+                    Map<String, Object> table = new HashMap<>();
+                    table.put("tableNumber", item.get("tableNumber").n());
+                    table.put("clientName", item.get("clientName").s());
+                    table.put("date", item.get("date").s());
+                    table.put("slotTimeStart", item.get("slotTimeStart").s());
+                    table.put("slotTimeEnd", item.get("slotTimeEnd").s());
+                    return table;
+                })
+                .collect(Collectors.toList());
 
     }
 }

@@ -79,9 +79,8 @@ public class TableService {
         return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("id", id).toString());
     }
 
-    public APIGatewayProxyResponseEvent handleGetTableById(APIGatewayProxyRequestEvent requestEvent, Context context) {
+    public APIGatewayProxyResponseEvent handleGetTableById(String tableId, Context context) {
         try {
-            String tableId = requestEvent.getPathParameters().get("tableId");
             context.getLogger().log("tableId: " + tableId);
             Map<String, AttributeValue> key = new HashMap<>();
             key.put("id", AttributeValue.builder().n(tableId).build());
