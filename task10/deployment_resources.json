@@ -135,7 +135,7 @@
         }
       },
       "/signin": {
-        "enable_cors": true,
+        "enable_cors": false,
         "POST": {
           "enable_proxy": true,
           "authorization_type": "NONE",
