@@ -41,10 +41,10 @@
     "resource_type": "cognito_idp",
     "password_policy": {
       "minimum_length": 8,
-      "require_uppercase": true,
-      "require_symbols": true,
-      "require_lowercase": true,
-      "require_numbers": true
+      "require_uppercase": false,
+      "require_symbols": false,
+      "require_lowercase": false,
+      "require_numbers": false
     },
     "auto_verified_attributes": [],
     "sms_configuration": {},
