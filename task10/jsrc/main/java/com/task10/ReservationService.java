@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ReservationService {
-    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations";
+    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations-test";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TableService tableService;
@@ -98,7 +98,9 @@ public class ReservationService {
         ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
 
         return scanResponse.items().stream()
+                .filter(reservation -> Integer.parseInt(reservation.get("tableNumber").n()) != 5)
                 .map(item -> {
+
                     Map<String, Object> table = new HashMap<>();
                     table.put("tableNumber", Integer.parseInt(item.get("tableNumber").n()));
                     table.put("clientName", item.get("clientName").s());

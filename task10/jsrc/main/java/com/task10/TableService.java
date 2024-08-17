@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TableService {
-    private static final String TABLE_NAME = "cmtr-e288a3c1-Tables";
+    private static final String TABLE_NAME = "cmtr-e288a3c1-Tables-test";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper;
 
