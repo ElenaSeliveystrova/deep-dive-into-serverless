@@ -21,6 +21,63 @@ public class ReservationService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TableService tableService;
 
+    final static class Reservation {
+        private int tableNumber;
+        private String clientName;
+        private String date;
+        private String slotTimeStart;
+        private String slotTimeEnd;
+
+        public Reservation(int tableNumber, String clientName, String date, String slotTimeStart, String slotTimeEnd) {
+            this.tableNumber = tableNumber;
+            this.clientName = clientName;
+            this.date = date;
+            this.slotTimeStart = slotTimeStart;
+            this.slotTimeEnd = slotTimeEnd;
+        }
+
+        public int getTableNumber() {
+            return tableNumber;
+        }
+
+        public void setTableNumber(int tableNumber) {
+            this.tableNumber = tableNumber;
+        }
+
+        public String getClientName() {
+            return clientName;
+        }
+
+        public void setClientName(String clientName) {
+            this.clientName = clientName;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public String getSlotTimeStart() {
+            return slotTimeStart;
+        }
+
+        public void setSlotTimeStart(String slotTimeStart) {
+            this.slotTimeStart = slotTimeStart;
+        }
+
+        public String getSlotTimeEnd() {
+            return slotTimeEnd;
+        }
+
+        public void setSlotTimeEnd(String slotTimeEnd) {
+            this.slotTimeEnd = slotTimeEnd;
+        }
+    }
+
+
     public ReservationService(TableService tableService) {
         this.tableService = tableService;
     }
@@ -74,14 +131,14 @@ public class ReservationService {
         return getReservations().stream()
                 .peek(reservation -> context.getLogger().log("reservation:" + reservation))
                 .anyMatch(reservation ->
-                        Integer.parseInt((String) reservation.get("tableNumber")) == tableNumber
-                                && reservation.get("date").equals(date));
+                        reservation.getTableNumber() == tableNumber
+                                && reservation.getDate().equals(date));
     }
 
     public APIGatewayProxyResponseEvent handleGetReservations() {
         try {
-            List<Map<String, Object>> reservations = getReservations();
-            Map<String, List<Map<String, Object>>> responseBody = new HashMap<>();
+            List<Reservation> reservations = getReservations();
+            Map<String, List<Reservation>> responseBody = new HashMap<>();
             responseBody.put("reservations", reservations);
 
             return new APIGatewayProxyResponseEvent()
@@ -93,20 +150,17 @@ public class ReservationService {
 
     }
 
-    private List<Map<String, Object>> getReservations() {
+    private List<Reservation> getReservations() {
         ScanRequest scanRequest = ScanRequest.builder().tableName(TABLE_NAME).build();
         ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
 
         return scanResponse.items().stream()
                 .map(item -> {
-
-                    Map<String, Object> table = new HashMap<>();
-                    table.put("tableNumber", Integer.parseInt(item.get("tableNumber").n()));
-                    table.put("clientName", item.get("clientName").s());
-                    table.put("date", item.get("date").s());
-                    table.put("slotTimeStart", item.get("slotTimeStart").s());
-                    table.put("slotTimeEnd", item.get("slotTimeEnd").s());
-                    return table;
+                    return new Reservation(Integer.parseInt((String) item.get("tableNumber").n()),
+                            item.get("clientName").s(),
+                            item.get("date").s(),
+                            item.get("slotTimeStart").s(),
+                            item.get("slotTimeEnd").s());
                 })
                 .collect(Collectors.toList());
 
