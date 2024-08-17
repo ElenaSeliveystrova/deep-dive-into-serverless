@@ -24,13 +24,16 @@ public class ReservationService {
     final static class Reservation {
         private int tableNumber;
         private String clientName;
+        private String phoneNumber;
+
         private String date;
         private String slotTimeStart;
         private String slotTimeEnd;
 
-        public Reservation(int tableNumber, String clientName, String date, String slotTimeStart, String slotTimeEnd) {
+        public Reservation(int tableNumber, String clientName, String phoneNumber, String date, String slotTimeStart, String slotTimeEnd) {
             this.tableNumber = tableNumber;
             this.clientName = clientName;
+            this.phoneNumber = phoneNumber;
             this.date = date;
             this.slotTimeStart = slotTimeStart;
             this.slotTimeEnd = slotTimeEnd;
@@ -75,6 +78,14 @@ public class ReservationService {
         public void setSlotTimeEnd(String slotTimeEnd) {
             this.slotTimeEnd = slotTimeEnd;
         }
+
+        public void setPhoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
     }
 
 
@@ -92,6 +103,7 @@ public class ReservationService {
 
         String clientName = json.getString("clientName");
         String date = json.getString("date");
+        String phoneNumber = json.getString("phoneNumber");
         String slotTimeStart = json.getString("slotTimeStart");
         String slotTimeEnd = json.getString("slotTimeEnd");
 
@@ -114,6 +126,7 @@ public class ReservationService {
         item.put("tableNumber", AttributeValue.builder().n(Integer.toString(tableNumber)).build());
         item.put("clientName", AttributeValue.builder().s(clientName).build());
         item.put("date", AttributeValue.builder().s(date).build());
+        item.put("phoneNumber", AttributeValue.builder().s(phoneNumber).build());
         item.put("slotTimeStart", AttributeValue.builder().s(slotTimeStart).build());
         item.put("slotTimeEnd", AttributeValue.builder().s(slotTimeEnd).build());
 
@@ -155,13 +168,12 @@ public class ReservationService {
         ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
 
         return scanResponse.items().stream()
-                .map(item -> {
-                    return new Reservation(Integer.parseInt((String) item.get("tableNumber").n()),
-                            item.get("clientName").s(),
-                            item.get("date").s(),
-                            item.get("slotTimeStart").s(),
-                            item.get("slotTimeEnd").s());
-                })
+                .map(item -> new Reservation(Integer.parseInt((String) item.get("tableNumber").n()),
+                        item.get("clientName").s(),
+                        item.get("phoneNumber").s(),
+                        item.get("date").s(),
+                        item.get("slotTimeStart").s(),
+                        item.get("slotTimeEnd").s()))
                 .collect(Collectors.toList());
 
     }
