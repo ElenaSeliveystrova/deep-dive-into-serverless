@@ -98,9 +98,7 @@ public class ReservationService {
         ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
 
         return scanResponse.items().stream()
-                .filter(reservation -> Integer.parseInt(reservation.get("tableNumber").n()) != 5)
                 .map(item -> {
-
                     Map<String, Object> table = new HashMap<>();
                     table.put("tableNumber", Integer.parseInt(item.get("tableNumber").n()));
                     table.put("clientName", item.get("clientName").s());
