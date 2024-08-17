@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TableService {
-    private static final String TABLE_NAME = "cmtr-e288a3c1-Tables-test";
+    private static final String TABLE_NAME = "cmtr-e288a3c1-Tables";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper;
 
@@ -116,42 +116,17 @@ public class TableService {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }
     }
-    public APIGatewayProxyResponseEvent handleGetTableByNumber(String number, Context context) {
+    public boolean isTableExist(int number) {
         try {
-            context.getLogger().log("numberId: " + number);
-            Map<String, AttributeValue> key = new HashMap<>();
-            key.put("number", AttributeValue.builder().n(number).build());
+            ScanRequest scanRequest = ScanRequest.builder().tableName(TABLE_NAME).build();
+            ScanResponse scanResponse = dynamoDbClient.scan(scanRequest);
 
-            GetItemRequest getItemRequest = GetItemRequest.builder()
-                    .tableName(TABLE_NAME)
-                    .key(key)
-                    .build();
-            context.getLogger().log("getItemRequest: " + getItemRequest.toString());
+            return scanResponse.items()
+                    .stream()
+                    .anyMatch(item ->Integer.parseInt(item.get("number").n()) == number);
 
-            GetItemResponse response = dynamoDbClient.getItem(getItemRequest);
-            context.getLogger().log("getItemResponse: " + response.toString());
-            Map<String, AttributeValue> item = response.item();
-
-            if (item == null || item.isEmpty()) {
-                return new APIGatewayProxyResponseEvent()
-                        .withStatusCode(400)
-                        .withBody("Table not found");
-            }
-
-            Map<String, Object> table = new HashMap<>();
-            table.put("id", Integer.parseInt(item.get("id").n()));
-            table.put("number", Integer.parseInt(item.get("number").n()));
-            table.put("places", Integer.parseInt(item.get("places").n()));
-            table.put("isVip", Boolean.parseBoolean(item.get("isVip").bool().toString()));
-            if (item.containsKey("minOrder")) {
-                table.put("minOrder", Integer.parseInt(item.get("minOrder").n()));
-            }
-
-            return new APIGatewayProxyResponseEvent()
-                    .withStatusCode(200)
-                    .withBody(objectMapper.writeValueAsString(table));
-        } catch (DynamoDbException | IOException e) {
-            return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
+        } catch (DynamoDbException e) {
+            return false;
         }
     }
 }

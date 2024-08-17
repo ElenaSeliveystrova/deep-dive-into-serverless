@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ReservationService {
-    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations-test";
+    private static final String TABLE_NAME = "cmtr-e288a3c1-Reservations";
     private final DynamoDbClient dynamoDbClient = DynamoDbClient.builder().build();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TableService tableService;
@@ -29,10 +29,10 @@ public class ReservationService {
         JSONObject json = new JSONObject(requestEvent.getBody());
         int tableNumber = json.getInt("tableNumber");
 
-        APIGatewayProxyResponseEvent responseEvent = tableService.handleGetTableByNumber(String.valueOf(tableNumber), context);
-        if (responseEvent.getStatusCode() != 200) {
-            return responseEvent;
+        if (!tableService.isTableExist(tableNumber)) {
+            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("No table found");
         }
+
         String clientName = json.getString("clientName");
         String date = json.getString("date");
         String slotTimeStart = json.getString("slotTimeStart");
