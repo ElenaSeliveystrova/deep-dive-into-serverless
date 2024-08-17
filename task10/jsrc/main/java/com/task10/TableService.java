@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
-import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
@@ -116,7 +115,43 @@ public class TableService {
         } catch (DynamoDbException | IOException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }
+    }
+    public APIGatewayProxyResponseEvent handleGetTableByNumber(String number, Context context) {
+        try {
+            context.getLogger().log("numberId: " + number);
+            Map<String, AttributeValue> key = new HashMap<>();
+            key.put("number", AttributeValue.builder().n(number).build());
 
+            GetItemRequest getItemRequest = GetItemRequest.builder()
+                    .tableName(TABLE_NAME)
+                    .key(key)
+                    .build();
+            context.getLogger().log("getItemRequest: " + getItemRequest.toString());
 
+            GetItemResponse response = dynamoDbClient.getItem(getItemRequest);
+            context.getLogger().log("getItemResponse: " + response.toString());
+            Map<String, AttributeValue> item = response.item();
+
+            if (item == null || item.isEmpty()) {
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(400)
+                        .withBody("Table not found");
+            }
+
+            Map<String, Object> table = new HashMap<>();
+            table.put("id", Integer.parseInt(item.get("id").n()));
+            table.put("number", Integer.parseInt(item.get("number").n()));
+            table.put("places", Integer.parseInt(item.get("places").n()));
+            table.put("isVip", Boolean.parseBoolean(item.get("isVip").bool().toString()));
+            if (item.containsKey("minOrder")) {
+                table.put("minOrder", Integer.parseInt(item.get("minOrder").n()));
+            }
+
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(200)
+                    .withBody(objectMapper.writeValueAsString(table));
+        } catch (DynamoDbException | IOException e) {
+            return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
+        }
     }
 }
