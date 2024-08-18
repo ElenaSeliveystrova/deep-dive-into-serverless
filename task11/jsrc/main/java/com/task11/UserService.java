@@ -50,45 +50,8 @@ public class UserService {
             cognitoClient.adminSetUserPassword(setUserPasswordRequest);
             return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject()
                     .put("message", "User has been successfully signed up.")
-                    .toString());
-
-//            AdminCreateUserResponse adminCreateUserResponse = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder()
-//                    .userPoolId(userPoolId)
-//                    .username(email)
-//                    .temporaryPassword(password)
-//                    .userAttributes(
-//                            AttributeType.builder()
-//                                    .name("given_name")
-//                                    .value(firstName)
-//                                    .build(),
-//                            AttributeType.builder()
-//                                    .name("family_name")
-//                                    .value(lastName)
-//                                    .build(),
-//                            AttributeType.builder()
-//                                    .name("email")
-//                                    .value(email)
-//                                    .build(),
-//                            AttributeType.builder()
-//                                    .name("email_verified")
-//                                    .value("true")
-//                                    .build()
-//                            )
-//                    .desiredDeliveryMediums(DeliveryMediumType.EMAIL)
-//                    .messageAction("SUPPRESS")
-//                    .forceAliasCreation(Boolean.FALSE)
-//                    .build()
-//            );
-//            String userId = adminCreateUserResponse.user().attributes().stream()
-//                    .filter(attr -> attr.name().equals("sub"))
-//                    .map(AttributeType::value)
-//                    .findAny()
-//                    .orElseThrow(() -> new RuntimeException("Sub not found."));
-//
-//            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject()
-//                    .put("message", "User has been successfully signed up.")
-//                    .put("userId", userId)
-//                    .toString());
+                    .toString())
+                    .withHeaders(HeadersUtils.initHeadersForCORS());
 
         } catch (UsernameExistsException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("User already exists: " + e.getMessage());
@@ -116,7 +79,10 @@ public class UserService {
             AdminInitiateAuthResponse authResult = cognitoClient.adminInitiateAuth(authRequest);
             String idToken = authResult.authenticationResult().idToken();
 
-            return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("accessToken", idToken).toString());
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(200)
+                    .withBody(new JSONObject().put("accessToken", idToken).toString())
+                    .withHeaders(HeadersUtils.initHeadersForCORS());
 
         } catch (NotAuthorizedException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody("Invalid credentials: " + e.getMessage());
