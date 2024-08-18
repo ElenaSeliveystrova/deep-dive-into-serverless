@@ -167,6 +167,19 @@
     },
     "/tables": {
       "get": {
+        "summary": "Get Tables",
+        "description": "Endpoint to retrieve a list of tables.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer eyJraWQiOiJ... (JWT token)"
+          }
+        ],
         "responses": {
           "200": {
             "description": "200 response",
@@ -181,6 +194,22 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Empty"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "There was an error in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid request parameters"
+                    }
+                  }
                 }
               }
             }
@@ -207,6 +236,53 @@
         }
       },
       "post": {
+        "summary": "Create Table",
+        "description": "Endpoint to create a new table.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer eyJraWQiOiJ... (JWT token)"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id", "number", "places", "isVip"],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "number": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "places": {
+                    "type": "integer",
+                    "example": 4
+                  },
+                  "isVip": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "minOrder": {
+                    "type": "integer",
+                    "nullable": true,
+                    "example": 100
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "200 response",
@@ -221,6 +297,22 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Empty"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "There was an error in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid request parameters"
+                    }
+                  }
                 }
               }
             }
@@ -559,14 +651,27 @@
     },
     "/tables/{tableId}": {
       "get": {
+        "summary": "Get Table by ID",
+        "description": "Endpoint to retrieve information about a specific table by its ID.",
         "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer eyJraWQiOiJ... (JWT token)"
+          },
           {
             "name": "tableId",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            }
+              "type": "integer"
+            },
+            "example": 1,
+            "description": "The ID of the table to retrieve."
           }
         ],
         "responses": {
@@ -586,7 +691,22 @@
                 }
               }
             }
-          }
+          },
+          "400": {
+            "description": "There was an error in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid table ID"
+                    }
+                  }
+                }
+              }
+            }
         },
         "security": [
           {
