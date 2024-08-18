@@ -17,6 +17,8 @@
   "paths": {
     "/reservations": {
       "get": {
+        "summary": "Get Reservations",
+        "description": "Endpoint to retrieve a list of table reservations.",
         "parameters": [
           {
             "name": "Authorization",
@@ -41,6 +43,22 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Empty"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "There was an error in the request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid request parameters"
+                    }
+                  }
                 }
               }
             }
@@ -67,6 +85,8 @@
         }
       },
       "post": {
+        "summary": "Create Reservation",
+        "description": "Endpoint to create a new table reservation.",
         "parameters": [
           {
             "name": "Authorization",
@@ -74,9 +94,57 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "Bearer eyJraWQiOiJ... (JWT token)"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tableNumber",
+                  "clientName",
+                  "phoneNumber",
+                  "date",
+                  "slotTimeStart",
+                  "slotTimeEnd"
+                ],
+                "properties": {
+                  "tableNumber": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "clientName": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "phoneNumber": {
+                    "type": "string",
+                    "example": "+1234567890"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-08-15"
+                  },
+                  "slotTimeStart": {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+                    "example": "13:00"
+                  },
+                  "slotTimeEnd": {
+                    "type": "string",
+                    "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+                    "example": "15:00"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "200 response",
@@ -91,6 +159,22 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Empty"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "There was an error in the request. Possible reasons include invalid input, table not found, or conflicting reservations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid reservation request data"
+                    }
+                  }
                 }
               }
             }
