@@ -297,24 +297,72 @@
     },
     "/signin": {
       "post": {
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "headers": {
-              "Access-Control-Allow-Origin": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Empty"
+        "summary": "User Signup",
+        "description": "Endpoint for user signup.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firstName", "lastName", "email", "password"],
+                "properties": {
+                  "firstName": {
+                    "type": "string",
+                    "example": "John"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "pattern": "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[\\$%\\^\\*_\\-])[A-Za-z\\d\\$%\\^\\*_\\-]{12,}$",
+                    "example": "P@ssword123$",
+                    "description": "Password must be at least 12 characters long, containing alphanumeric characters and at least one of these special characters: `$%^*-_`."
+                  }
                 }
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Sign-up process is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Signup successful"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "There was an error in the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid request parameters"
+                    }
+                  }
+                }
+              }
+            }
         },
         "x-amazon-apigateway-integration": {
           "type": "aws_proxy",
