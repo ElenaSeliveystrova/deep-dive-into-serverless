@@ -47,7 +47,8 @@ public class TableService {
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(objectMapper.writeValueAsString(responseBody));
+                    .withBody(objectMapper.writeValueAsString(responseBody))
+                    .withHeaders(HeadersUtils.initHeadersForCORS());
         } catch (DynamoDbException | IOException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }
@@ -75,7 +76,10 @@ public class TableService {
                 .build();
 
         dynamoDbClient.putItem(request);
-        return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("id", id).toString());
+        return new APIGatewayProxyResponseEvent()
+                .withStatusCode(200)
+                .withBody(new JSONObject().put("id", id).toString())
+                .withHeaders(HeadersUtils.initHeadersForCORS());
     }
 
     public APIGatewayProxyResponseEvent handleGetTableById(String tableId, Context context) {
@@ -111,7 +115,8 @@ public class TableService {
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(objectMapper.writeValueAsString(table));
+                    .withBody(objectMapper.writeValueAsString(table))
+                    .withHeaders(HeadersUtils.initHeadersForCORS());
         } catch (DynamoDbException | IOException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }

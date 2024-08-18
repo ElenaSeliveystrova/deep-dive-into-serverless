@@ -1,0 +1,7 @@
+POST https://d2o7zamklkmdaxwmpyx3iicsfy0aluih.lambda-url.eu-central-1.on.aws/signin
+Content-Type: application/json
+
+{
+  "email": "magicnimfa@gmail.com",
+  "password": "2342afs#"
+}

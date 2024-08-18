@@ -136,7 +136,10 @@ public class ReservationService {
                 .build();
 
         dynamoDbClient.putItem(request);
-        return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(new JSONObject().put("reservationId", reservationId).toString());
+        return new APIGatewayProxyResponseEvent()
+                .withStatusCode(200)
+                .withBody(new JSONObject().put("reservationId", reservationId).toString())
+                .withHeaders(HeadersUtils.initHeadersForCORS());
     }
 
     private boolean hasOverlapping(int tableNumber, String date, Context context) {
@@ -156,7 +159,8 @@ public class ReservationService {
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(objectMapper.writeValueAsString(responseBody));
+                    .withBody(objectMapper.writeValueAsString(responseBody))
+                    .withHeaders(HeadersUtils.initHeadersForCORS());
         } catch (DynamoDbException | IOException e) {
             return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody("Internal server error: " + e.getMessage());
         }

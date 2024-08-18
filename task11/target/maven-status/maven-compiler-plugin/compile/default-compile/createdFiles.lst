@@ -2,4 +2,5 @@ com/task11/UserService.class
 com/task11/ReservationService$Reservation.class
 com/task11/ApiHandler.class
 com/task11/TableService.class
+com/task11/HeadersUtils.class
 com/task11/ReservationService.class
