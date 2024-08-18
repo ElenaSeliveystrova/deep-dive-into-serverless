@@ -325,17 +325,18 @@
         },
         "responses": {
           "200": {
-            "description": "The request has succeeded. The server has processed the sign-in request, and the provided credentials were valid.",
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "accessToken": {
-                      "type": "string",
-                      "example": "eyJraWQiOiJ... (JWT token)"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Empty"
                 }
               }
             }
@@ -459,17 +460,18 @@
         },
         "responses": {
           "200": {
-            "description": "Sign-up process is successful",
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Signup successful"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Empty"
                 }
               }
             }
