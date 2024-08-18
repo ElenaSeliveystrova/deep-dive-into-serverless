@@ -691,22 +691,7 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "There was an error in the request.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Invalid table ID"
-                    }
-                  }
-                }
-              }
-            }
+          }
         },
         "security": [
           {
